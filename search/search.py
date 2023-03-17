@@ -138,14 +138,35 @@ def depthFirstSearch(problem: SearchProblem):
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    start_state = problem.getStartState()
+    action_list =  []
     frontier_queue = util.Queue()
-    action_list = []
-    explored_set = [start_state]
-    for item in problem.getSuccessors(start_state):
-        frontier_queue.push((1, item))
-
+    explored_set = []
+    start_state = problem.getStartState()
+    
+    frontier_queue.push((start_state, []))
+        
     while not frontier_queue.isEmpty():
+        cur_config = frontier_queue.pop()
+        cur_state = cur_config[0]
+        cur_all_actions = cur_config[1]
+        if problem.isGoalState(cur_state):
+            return cur_all_actions
+        if cur_state in explored_set:
+            continue
+        explored_set.append(cur_state)
+        next_successors = problem.getSuccessors(cur_state)
+        for child in next_successors[:]:
+            if explored_set.count(child):
+                next_successors.remove(child)
+        if len(next_successors) == 0:
+            continue
+        for item in next_successors:
+            child_all_actions = cur_all_actions[:]
+            child_all_actions.append(item[1])
+            frontier_queue.push((item[0], child_all_actions))
+            
+        #a list of triples, (successor state, action, stepCost)
+
        #TODO
     #    看了一下stackoverflow, 才发现有更简单的方法. 在数据结构中直接储存路径而不是节点.
     # 太聪明了.... 我tm花了4到5个小时写第一个dfs...wuyuzi
@@ -155,6 +176,7 @@ def breadthFirstSearch(problem: SearchProblem):
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
+    
     util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
