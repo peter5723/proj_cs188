@@ -176,7 +176,41 @@ def breadthFirstSearch(problem: SearchProblem):
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
+    def priorityFunction(item):
+        return item[1]
+    action_list =  []
+    frontier_queue = util.PriorityQueueWithFunction(priorityFunction)
+    explored_set = []
+    start_state = problem.getStartState()
     
+    frontier_queue.push((start_state, 0, [])) #state, cost, all actions
+
+    min_all_cost = 0 
+    now_all_cost = 0
+    while not frontier_queue.isEmpty():
+        cur_config = frontier_queue.pop()
+        cur_state = cur_config[0]
+        cur_cost = cur_config[1]
+        cur_all_actions = cur_config[2]
+        if problem.isGoalState(cur_state):
+            return cur_all_actions
+        #没毛病? 这种方法下(ucs)第一个弹出的理应是最优解
+        if cur_state in explored_set:
+            continue
+        #一样的也有可能已经在之前就explore过了
+        explored_set.append(cur_state)
+        next_successors = problem.getSuccessors(cur_state)
+        for item in next_successors[:]:
+            if item[0] in explored_set:
+                next_successors.remove(item)
+        if len(next_successors)==0:
+            continue
+        for item in next_successors:
+            item_actions = cur_all_actions[:]
+            item_actions.append(item[1])
+            item_all_cost = problem.getCostOfActions(item_actions)
+            frontier_queue.push((item[0], item_all_cost, item_actions))
+        
     util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
