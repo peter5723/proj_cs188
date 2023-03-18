@@ -396,9 +396,15 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
 
     "*** YOUR CODE HERE ***"
     dist = 0
+    min_dist = 99999999
+    remained_corner = list(problem.corners)
     for corner in state[1]:
-        dist += util.manhattanDistance(state[0], corner)
+        remained_corner.remove(corner)
+    for corner in remained_corner:
+        dist = max(util.manhattanDistance(corner, state[0]), dist)
     return dist
+    #找当前点到剩余Corner的Manhattan距离的最大值是一个addmissible的,
+    #还有更好的就暂时找不到了
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -492,7 +498,13 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    all_food = foodGrid.asList()
+    dist = 0
+    for food in all_food:
+        dist = max(util.manhattanDistance(food, position),dist)
+    return dist
+    #同样的我也不求最好了...
+    #要A*优化过后,垃圾电脑还要跑9s,说明A*的重要性. 不用A*跑不出的
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -523,6 +535,12 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
+        #终于做到最后一道题目了
+        
+                # prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
+        prob = AnyFoodSearchProblem(gameState)
+        return search.ucs(prob)
+
         util.raiseNotDefined()
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -556,8 +574,15 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         The state is Pacman's position. Fill this in with a goal test that will
         complete the problem definition.
         """
-        x,y = state
-
+        food_list = self.food.asList()
+        min_dist = 99999
+        min_food = food_list[0]
+        for food in food_list:
+            cur_dist=  util.manhattanDistance(food, self.startState)
+            if cur_dist < min_dist:
+                min_dist = cur_dist
+                min_food = food
+        return state==min_food
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
 
