@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": []
+            "args": [ "-l", "tinyCorners", "-p", "SearchAgent","-a","fn=bfs,prob=CornersProblem"]
         }
     ]
 }
