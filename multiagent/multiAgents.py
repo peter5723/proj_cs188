@@ -184,6 +184,50 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
+        #注意，题给的深度不是树的深度，而是回合数的意思。
+        #当然 回合数*agent数 就是我们所需要的深度了
+        agentIndex = self.index #这个agent的index,0 is pacman, !0 is ghost
+        def getScoreAndAction(gameState:GameState, agentIndex, depth, dstDepth):
+            numAgents = gameState.getNumAgents()
+            #输入当前的状态和当前的深度和目标的深度,当前的
+            #返回这个节点的分数和达到这个分数所采取的下一步动作，递归。(是tree中的分不是实际的分，不要混淆)
+            if gameState.isWin() or gameState.isLose():
+                #递归出口1，游戏结束。
+                return self.evaluationFunction(gameState), None
+            if depth == dstDepth:
+                #递归出口2，已经达到了所需要探险的深度
+                return self.evaluationFunction(gameState), None
+            actionsList = gameState.getLegalActions(agentIndex)
+            #如何判断gameState返回的动作是属于哪一个agent的呢?sb, 有参数的
+            stateList = []
+            for action in actionsList:
+                stateList.append(gameState.generateSuccessor(agentIndex, action))
+            
+            miniMaxScore, _ = getScoreAndAction(stateList[0], (agentIndex+1)%numAgents, depth+1,dstDepth)
+            action = actionsList[0]
+            for i, state in enumerate(stateList[1:]):
+                actionsList_1 = actionsList[1:]
+                score, _ = getScoreAndAction(state, (agentIndex+1)%numAgents, depth+1,dstDepth)
+                if agentIndex == 0:
+                    if score > miniMaxScore:
+                        miniMaxScore = score
+                        action = actionsList_1[i]
+                else:
+                    if score < miniMaxScore:
+                        miniMaxScore = score
+                        action = actionsList_1[i]
+               
+            
+            return miniMaxScore, action
+
+        dstDepth = self.depth * gameState.getNumAgents()
+        score, action = getScoreAndAction(gameState, agentIndex, 0, dstDepth)
+        #好好好，从第0层开始，行了吧
+        return action
+        
+                
+            
+
         util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
