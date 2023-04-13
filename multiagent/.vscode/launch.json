@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["-p", "MinimaxAgent", "-l", "minimaxClassic", "-a", "depth=1"]
+            "args": ["-q","q3"]
         }
     ]
 }
