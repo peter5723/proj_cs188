@@ -335,6 +335,55 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
+        agentIndex = self.index
+        
+        def getScoreAndAction(gameState: GameState, agentIndex, depth,
+                              dstDepth):
+                if agentIndex == 0:
+                    return maxScoreAndAction(gameState, agentIndex, depth, dstDepth)
+                else:
+                    return expScoreAndAction(gameState, agentIndex, depth, dstDepth)
+        
+        def maxScoreAndAction(gameState: GameState, agentIndex, depth,
+                              dstDepth):
+            numAgents = gameState.getNumAgents()
+            if gameState.isWin() or gameState.isLose() or depth == dstDepth:
+                return self.evaluationFunction(gameState), None
+            actionsList = gameState.getLegalActions(agentIndex)
+            miniMaxScore = -999999
+            best_action = None
+            for action in actionsList:
+                state = gameState. generateSuccessor(agentIndex, action)
+                score, _ = expScoreAndAction(
+                    state, (agentIndex+1)%numAgents, depth+1, dstDepth
+                )
+                if score >= miniMaxScore:
+                    miniMaxScore = score
+                    best_action = action
+            return miniMaxScore, best_action
+        
+        def expScoreAndAction(gameState: GameState, agentIndex, depth,
+                              dstDepth):
+            numAgents = gameState.getNumAgents()
+            if gameState.isWin() or gameState.isLose() or depth == dstDepth:
+                return self.evaluationFunction(gameState), None
+            actionsList = gameState.getLegalActions(agentIndex)
+            exp_score = 0
+            p = 1/len(actionsList)
+            for action in actionsList:
+                state = gameState.generateSuccessor(agentIndex, action)
+                if (agentIndex+1)%numAgents==0:
+                    score, _ = maxScoreAndAction(state, (agentIndex+1)%numAgents, depth+1,dstDepth)
+                else:
+                    score, _ = expScoreAndAction(state,
+                                                 (agentIndex + 1) % numAgents,
+                                                 depth + 1, dstDepth)
+                exp_score += p*score
+            return exp_score, random.choice(actionsList)
+        
+        dstDepth = self.depth * gameState.getNumAgents()
+        _, action = getScoreAndAction(gameState, agentIndex, 0, dstDepth)
+        return action
         util.raiseNotDefined()
 
 
@@ -346,6 +395,45 @@ def betterEvaluationFunction(currentGameState: GameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
+    #有点儿懒得做开放题
+    #随便拿个满分就算了，也不求最好了
+    #这个感觉比reflex更简单了吧，直接评估当前状态就可以了
+    nowPos = currentGameState.getPacmanPosition()
+    nowFoodList = currentGameState.getFood().asList()
+    nowGhostStates = currentGameState.getGhostStates()
+    nowScaredTimes = [
+        ghostState.scaredTimer for ghostState in nowGhostStates
+    ]
+    ghostsPos = [ghostState.getPosition() for ghostState in nowGhostStates]
+
+    score = 0
+    #妈的又不吃东西啊
+    #吃，狠狠的吃！
+    #先考虑食物的数量显然是越少越好
+    if len(nowFoodList) > 0:
+        score += 20000/len(nowFoodList) #由于食物数量很多，所以常数要大
+    else:
+        score += 200000
+    #当几个状态食物数量相同的时候，最近的食物的距离越小越好
+    #也可以考虑放入距离最大的食物？
+    minFoodDist = 999999
+    # maxFoodDist = 0
+    for food in nowFoodList:
+        foodDist = manhattanDistance(food, nowPos)
+        minFoodDist = min(minFoodDist, foodDist)
+        # maxFoodDist = max(maxFoodDist, foodDist)
+    score += 500/minFoodDist
+    # score += 5*maxFoodDist
+    for ghostPos, scaredTime in zip(ghostsPos, nowScaredTimes):
+        dist = manhattanDistance(ghostPos, nowPos)
+        if dist > 0:
+            if scaredTime > 0:
+                score += 50000/dist
+            else:
+                score -= 1000/dist
+        else:
+            score -= 200000
+    return score
     util.raiseNotDefined()
 
 
