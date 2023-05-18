@@ -29,6 +29,7 @@
 import sys
 import inspect
 import heapq, random
+import io
 
 
 class FixedRandom:
@@ -180,7 +181,6 @@ class PriorityQueue:
 
     def push(self, item, priority):
         entry = (priority, self.count, item)
-        #self.priority是用来比较大小的数字。self.count是用来防止无法比较的情况。
         heapq.heappush(self.heap, entry)
         self.count += 1
 
@@ -244,12 +244,12 @@ class Counter(dict):
     all keys are defaulted to have value 0.  Using a dictionary:
 
     a = {}
-    print(a['test'])
+    print a['test']
 
     would give an error, while the Counter class analogue:
 
     >>> a = Counter()
-    >>> print(a['test'])
+    >>> print a['test']
     0
 
     returns the default 0 value. Note that to reference a key
@@ -258,14 +258,14 @@ class Counter(dict):
 
     >>> a = Counter()
     >>> a['test'] = 2
-    >>> print(a['test'])
+    >>> print a['test']
     2
 
     This is very useful for counting things without initializing their counts,
     see for example:
 
     >>> a['blah'] += 1
-    >>> print(a['blah'])
+    >>> print a['blah']
     1
 
     The counter also includes additional functionality useful in implementing
@@ -296,7 +296,7 @@ class Counter(dict):
         Returns the key with the highest value.
         """
         if len(self.keys()) == 0: return None
-        all = self.items()
+        all = list(self.items())
         values = [x[1] for x in all]
         maxIndex = values.index(max(values))
         return all[maxIndex][0]
@@ -595,7 +595,8 @@ def pause():
     """
     Pauses the output stream awaiting user feedback.
     """
-    input("<Press enter/return to continue>")
+    print("<Press enter/return to continue>")
+    input()
 
 
 # code to handle timeouts
@@ -622,7 +623,7 @@ class TimeoutFunction:
         raise TimeoutFunctionException()
 
     def __call__(self, *args, **keyArgs):
-        # If we have SIGALRM signal, use it to cause an exception if and
+        # If we have SIGALRM signa, use it to cause an exception if and
         # when this function runs too long.  Otherwise check the time taken
         # after the method has returned, and throw an exception then.
         if hasattr(signal, 'SIGALRM'):

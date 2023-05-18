@@ -178,6 +178,7 @@ def uniformCostSearch(problem: SearchProblem):
     "*** YOUR CODE HERE ***"
     def priorityFunction(item):
         return item[1]
+    #item是一个tuple, priorityFunction返回比较的依据也就是item[1]
     action_list =  []
     frontier_queue = util.PriorityQueueWithFunction(priorityFunction)
     explored_set = []
