@@ -117,6 +117,7 @@ def joinFactors(factors: List[Factor]):
                 "\nappear in more than one input factor.\n" +
                 "Input factors: \n" + "\n".join(map(str, factors)))
     "*** YOUR CODE HERE ***"
+
     # 下面两个是helper func
     def getNewVari(old_uncon, old_con, uncon, con):
         #一定要这样的(我是说copy)
@@ -134,15 +135,13 @@ def joinFactors(factors: List[Factor]):
                 new_con.add(j)
         return new_uncon, new_con
 
-
-
     def canMul(old_vari, new_vari):
         # 只有在：新的变量与旧的变量同时出现时取值相同
         # 或者：新的变量根本就不出现在旧的变量中的时候
         # 可以执行概率的相乘
         for key in new_vari.keys():
             if key in old_vari.keys():
-                if(old_vari[key]!=new_vari[key]):
+                if (old_vari[key] != new_vari[key]):
                     return False
         return True
 
@@ -157,7 +156,7 @@ def joinFactors(factors: List[Factor]):
         #更新后的new_uncon,new_con
         new_uncon, new_con = getNewVari(old_uncon, old_con, uncon, con)
         new_factor = Factor(new_uncon, new_con, new_vari_dict)
-        if  len(old_uncon)==0:
+        if len(old_uncon) == 0:
             tmp_factor = factor
             old_con = con
             old_uncon = uncon
@@ -167,20 +166,19 @@ def joinFactors(factors: List[Factor]):
         for vari_t in tmp_factor.getAllPossibleAssignmentDicts():
             prob_t = tmp_factor.getProbability(vari_t)
             for vari_n in factor.getAllPossibleAssignmentDicts():
-                    prob_n = factor.getProbability(vari_n)
-                    # 对里面的每一个变量，
-                    # 只有在：新的变量与旧的变量同时出现时取值相同
-                    # 或者：新的变量根本就不出现在旧的变量中的时候
-                    # 可以执行概率的相乘
-                    if canMul(vari_t, vari_n):
-                        new_prob = prob_n*prob_t
-                        new_ass_dict = {**vari_t, **vari_n}
-                        new_factor.setProbability(new_ass_dict, new_prob)
+                prob_n = factor.getProbability(vari_n)
+                # 对里面的每一个变量，
+                # 只有在：新的变量与旧的变量同时出现时取值相同
+                # 或者：新的变量根本就不出现在旧的变量中的时候
+                # 可以执行概率的相乘
+                if canMul(vari_t, vari_n):
+                    new_prob = prob_n * prob_t
+                    new_ass_dict = {**vari_t, **vari_n}
+                    new_factor.setProbability(new_ass_dict, new_prob)
         tmp_factor = new_factor
         old_con = new_con
         old_uncon = new_uncon
     return new_factor
-
     "*** END YOUR CODE HERE ***"
 
 
@@ -232,7 +230,21 @@ def eliminateWithCallTracking(callTrackingList=None):
                     "eliminationVariable:" + str(eliminationVariable) + "\n" +\
                     "unconditionedVariables: " + str(factor.unconditionedVariables()))
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        con = factor.conditionedVariables()
+        uncon = factor.unconditionedVariables()
+        varidict = factor.variableDomainsDict()
+        uncon.remove(eliminationVariable)
+        all_value_of_eliVal = varidict[eliminationVariable]  #这个变量的所有取值
+        new_factor = Factor(uncon, con, varidict)
+        for vari_n in new_factor.getAllPossibleAssignmentDicts():
+            prob = 0
+            for vari_o in factor.getAllPossibleAssignmentDicts():
+                vari_o_copy = vari_o.copy()
+                vari_o_copy.pop(eliminationVariable)
+                if vari_o_copy == vari_n:  #(判断是否是子集)(笨笨的)
+                    prob += factor.getProbability(vari_o) #是的话就加
+            new_factor.setProbability(vari_n, prob)
+        return new_factor
         "*** END YOUR CODE HERE ***"
 
     return eliminate

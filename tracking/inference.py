@@ -197,7 +197,32 @@ def inferenceByVariableEliminationWithCallTracking(callTrackingList=None):
             eliminationOrder = sorted(list(eliminationVariables))
 
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        #在bayes网络中消元推理，值得一做
+        #已经知道eliminate的order的话，queryVariablesSet的信息应该不需要了吧
+        # getAllCPTsWithEvidence()是可以得到所有的BN中所有的CPT, 参数是证据（条件变量）, 返回是一个factor list
+        currentFactorsList = bayesNet.getAllCPTsWithEvidence(evidenceDict)
+        for x in eliminationOrder:
+            #x是待消元的变量
+            #下面存储待join的factors
+            factors_waited_join = []
+            for factor in currentFactorsList.copy():
+                if x in factor.unconditionedVariables() or x in factor.conditionedVariables():
+                    factors_waited_join.append(factor)
+                    currentFactorsList.remove(factor)
+            _, tmp_factor = joinFactorsByVariable(factors_waited_join, x)
+            
+            tmp_factor = eliminate(tmp_factor, x)
+            currentFactorsList.append(tmp_factor)
+        #最后应该仅剩一个factor
+        new_factor = normalize(tmp_factor)
+        return new_factor
+
+        
+        # currentFactorsList = bayesNet.getAllCPTsWithEvidence(evidenceDict)
+        # for joinVariable in bayesNet.variablesSet():
+        #     currentFactorsList, joinedFactor = joinFactorsByVariable(currentFactorsList, joinVariable)
+        #     currentFactorsList.append(joinedFactor)              
+
         "*** END YOUR CODE HERE ***"
 
 
