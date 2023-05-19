@@ -17,3 +17,7 @@
 这个代码真的很抽象. 底层足够抽象, 上层就可以用来解决更多的问题, 第一次看见.
 
 dfs bfs ucs a*
+
+# proj2: adversal search
+
+注意 $\alpha-\beta$ pruning吧，别的没啥。感觉挺简单的，虽然也写了挺久，evaluation function要不断尝试。
