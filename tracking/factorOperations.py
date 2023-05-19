@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -16,8 +16,8 @@ from bayesNet import Factor
 import functools
 from util import raiseNotDefined
 
-def joinFactorsByVariableWithCallTracking(callTrackingList=None):
 
+def joinFactorsByVariableWithCallTracking(callTrackingList=None):
 
     def joinFactorsByVariable(factors: List[Factor], joinVariable: str):
         """
@@ -37,27 +37,42 @@ def joinFactorsByVariableWithCallTracking(callTrackingList=None):
         if not (callTrackingList is None):
             callTrackingList.append(('join', joinVariable))
 
-        currentFactorsToJoin =    [factor for factor in factors if joinVariable in factor.variablesSet()]
-        currentFactorsNotToJoin = [factor for factor in factors if joinVariable not in factor.variablesSet()]
+        currentFactorsToJoin = [
+            factor for factor in factors
+            if joinVariable in factor.variablesSet()
+        ]
+        currentFactorsNotToJoin = [
+            factor for factor in factors
+            if joinVariable not in factor.variablesSet()
+        ]
 
         # typecheck portion
-        numVariableOnLeft = len([factor for factor in currentFactorsToJoin if joinVariable in factor.unconditionedVariables()])
+        numVariableOnLeft = len([
+            factor for factor in currentFactorsToJoin
+            if joinVariable in factor.unconditionedVariables()
+        ])
         if numVariableOnLeft > 1:
             print("Factor failed joinFactorsByVariable typecheck: ", factor)
-            raise ValueError("The joinBy variable can only appear in one factor as an \nunconditioned variable. \n" +  
-                               "joinVariable: " + str(joinVariable) + "\n" +
-                               ", ".join(map(str, [factor.unconditionedVariables() for factor in currentFactorsToJoin])))
-        
+            raise ValueError(
+                "The joinBy variable can only appear in one factor as an \nunconditioned variable. \n"
+                + "joinVariable: " + str(joinVariable) + "\n" + ", ".join(
+                    map(str, [
+                        factor.unconditionedVariables()
+                        for factor in currentFactorsToJoin
+                    ])))
+
         joinedFactor = joinFactors(currentFactorsToJoin)
         return currentFactorsNotToJoin, joinedFactor
 
     return joinFactorsByVariable
+
 
 joinFactorsByVariable = joinFactorsByVariableWithCallTracking()
 
 ########### ########### ###########
 ########### QUESTION 2  ###########
 ########### ########### ###########
+
 
 def joinFactors(factors: List[Factor]):
     """
@@ -89,25 +104,90 @@ def joinFactors(factors: List[Factor]):
     """
 
     # typecheck portion
-    setsOfUnconditioned = [set(factor.unconditionedVariables()) for factor in factors]
+    setsOfUnconditioned = [
+        set(factor.unconditionedVariables()) for factor in factors
+    ]
     if len(factors) > 1:
         intersect = functools.reduce(lambda x, y: x & y, setsOfUnconditioned)
         if len(intersect) > 0:
             print("Factor failed joinFactors typecheck: ", factor)
-            raise ValueError("unconditionedVariables can only appear in one factor. \n"
-                    + "unconditionedVariables: " + str(intersect) + 
-                    "\nappear in more than one input factor.\n" + 
-                    "Input factors: \n" +
-                    "\n".join(map(str, factors)))
-
-
+            raise ValueError(
+                "unconditionedVariables can only appear in one factor. \n" +
+                "unconditionedVariables: " + str(intersect) +
+                "\nappear in more than one input factor.\n" +
+                "Input factors: \n" + "\n".join(map(str, factors)))
     "*** YOUR CODE HERE ***"
-    raiseNotDefined()
+    # 下面两个是helper func
+    def getNewVari(old_uncon, old_con, uncon, con):
+        #一定要这样的(我是说copy)
+        new_con = old_con.copy()
+        new_uncon = old_uncon.copy()
+        if old_uncon == [] and old_con == []:
+            return (uncon, con)
+        for i in uncon:
+            if i not in new_uncon:
+                new_uncon.add(i)
+            if i in new_con:
+                new_con.remove(i)
+        for j in con:
+            if j not in new_con and j not in new_uncon:
+                new_con.add(j)
+        return new_uncon, new_con
+
+
+
+    def canMul(old_vari, new_vari):
+        # 只有在：新的变量与旧的变量同时出现时取值相同
+        # 或者：新的变量根本就不出现在旧的变量中的时候
+        # 可以执行概率的相乘
+        for key in new_vari.keys():
+            if key in old_vari.keys():
+                if(old_vari[key]!=new_vari[key]):
+                    return False
+        return True
+
+    old_uncon = set()
+    old_con = set()
+    #old_factor
+    tmp_factor = Factor(old_uncon, old_con, {})
+    for factor in factors:
+        uncon = factor.unconditionedVariables()
+        con = factor.conditionedVariables()
+        new_vari_dict = factor.variableDomainsDict()
+        #更新后的new_uncon,new_con
+        new_uncon, new_con = getNewVari(old_uncon, old_con, uncon, con)
+        new_factor = Factor(new_uncon, new_con, new_vari_dict)
+        if  len(old_uncon)==0:
+            tmp_factor = factor
+            old_con = con
+            old_uncon = uncon
+            continue
+        #tmp_factor = Factor(old_con, con, new_vari_dict) or new_factor
+        #更新概率
+        for vari_t in tmp_factor.getAllPossibleAssignmentDicts():
+            prob_t = tmp_factor.getProbability(vari_t)
+            for vari_n in factor.getAllPossibleAssignmentDicts():
+                    prob_n = factor.getProbability(vari_n)
+                    # 对里面的每一个变量，
+                    # 只有在：新的变量与旧的变量同时出现时取值相同
+                    # 或者：新的变量根本就不出现在旧的变量中的时候
+                    # 可以执行概率的相乘
+                    if canMul(vari_t, vari_n):
+                        new_prob = prob_n*prob_t
+                        new_ass_dict = {**vari_t, **vari_n}
+                        new_factor.setProbability(new_ass_dict, new_prob)
+        tmp_factor = new_factor
+        old_con = new_con
+        old_uncon = new_uncon
+    return new_factor
+
     "*** END YOUR CODE HERE ***"
+
 
 ########### ########### ###########
 ########### QUESTION 3  ###########
 ########### ########### ###########
+
 
 def eliminateWithCallTracking(callTrackingList=None):
 
@@ -141,22 +221,21 @@ def eliminateWithCallTracking(callTrackingList=None):
         if eliminationVariable not in factor.unconditionedVariables():
             print("Factor failed eliminate typecheck: ", factor)
             raise ValueError("Elimination variable is not an unconditioned variable " \
-                            + "in this factor\n" + 
+                            + "in this factor\n" +
                             "eliminationVariable: " + str(eliminationVariable) + \
                             "\nunconditionedVariables:" + str(factor.unconditionedVariables()))
-        
+
         if len(factor.unconditionedVariables()) == 1:
             print("Factor failed eliminate typecheck: ", factor)
             raise ValueError("Factor has only one unconditioned variable, so you " \
                     + "can't eliminate \nthat variable.\n" + \
                     "eliminationVariable:" + str(eliminationVariable) + "\n" +\
                     "unconditionedVariables: " + str(factor.unconditionedVariables()))
-
         "*** YOUR CODE HERE ***"
         raiseNotDefined()
         "*** END YOUR CODE HERE ***"
 
     return eliminate
 
-eliminate = eliminateWithCallTracking()
 
+eliminate = eliminateWithCallTracking()

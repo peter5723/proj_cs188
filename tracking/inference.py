@@ -61,7 +61,22 @@ def constructBayesNet(gameState: hunters.GameState):
     variableDomainsDict = {}
 
     "*** YOUR CODE HERE ***"
-    
+    variables = [PAC, GHOST0, GHOST1, OBS0, OBS1]
+    edges = [(GHOST0,OBS0),(PAC, OBS0),(PAC, OBS1),(GHOST1, OBS1)]
+    variableDomainsDict[GHOST0] = [(x,y) for x in range(X_RANGE) for y in range(Y_RANGE)]
+    variableDomainsDict[GHOST1] = [(x,y) for x in range(X_RANGE) for y in range(Y_RANGE)]
+    variableDomainsDict[PAC] = [(x,y) for x in range(X_RANGE) for y in range(Y_RANGE)]
+    # gp0 = gameState.getObservation()
+    # gp1 = gameState.getObservedPositions()
+    # pp = gameState.getPacmanPosition()
+    # d1 = manhattanDistance(gp0, pp)
+    # d2 = manhattanDistance(gp1, pp)
+    #d1=0
+    #d2=0
+    #注意这里上面的错误，我们只要得到OBS取值的范围就行了，和具体的位置没有关系，理解错误了
+    #6是噪声X_RANGE+Y_RANGE-1+7
+    variableDomainsDict[OBS0] = [i for i in range(0, X_RANGE+Y_RANGE+6)]
+    variableDomainsDict[OBS1] = [i for i in range(0, X_RANGE+Y_RANGE+6)]
     "*** END YOUR CODE HERE ***"
 
     net = bn.constructEmptyBayesNet(variables, edges, variableDomainsDict)
