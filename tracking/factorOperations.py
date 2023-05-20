@@ -160,6 +160,7 @@ def joinFactors(factors: List[Factor]):
             tmp_factor = factor
             old_con = con
             old_uncon = uncon
+            new_factor = factor
             continue
         #tmp_factor = Factor(old_con, con, new_vari_dict) or new_factor
         #更新概率
