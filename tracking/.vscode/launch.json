@@ -12,7 +12,7 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             // "args": ["-t", "test_cases/q2/1-product-rule"]
-            "args": ["-t", "test_cases/q4/2-independent-eliminate"]
+            "args": ["-t", "test_cases/q4/4-common-effect-eliminate"]
         }
     ]
 }

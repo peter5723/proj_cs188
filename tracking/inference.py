@@ -211,8 +211,7 @@ def inferenceByVariableEliminationWithCallTracking(callTrackingList=None):
                     factors_waited_join.append(factor)
             #tmp_factor 是待消元的factor
             #if len(factors_waited_join) <= 1:
-            if True:
-                currentFactorsList, tmp_factor = joinFactorsByVariable(currentFactorsList, x)
+            currentFactorsList, tmp_factor = joinFactorsByVariable(currentFactorsList, x)
             #else:
                 #除去即将被消元的factor
                 #currentFactorsList = list(set(currentFactorsList).difference(set(factors_waited_join)))
